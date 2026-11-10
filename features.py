@@ -92,7 +92,7 @@ def prepare_features(df):
 
 def load_data(path=DATA_PATH):
     """Read the raw CSV ('?' = missing) and drop encounters that cannot be readmitted."""
-    df = pd.read_csv(path, na_values="?", keep_default_na=False)
+    df = pd.read_csv(path, na_values="?", keep_default_na=False, low_memory=False)
     df = df[~df["discharge_disposition_id"].isin(DISCHARGE_EXCLUDE)].reset_index(drop=True)
     df["target"] = (df["readmitted"] == "<30").astype(int)
     return df
