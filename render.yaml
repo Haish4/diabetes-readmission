@@ -1,0 +1,6 @@
+services:
+  - type: web
+    name: diabetes-readmission
+    runtime: docker
+    plan: free
+    healthCheckPath: /ping

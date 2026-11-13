@@ -11,4 +11,4 @@ COPY features.py predict.py model.bin ./
 
 EXPOSE 9696
 
-ENTRYPOINT ["gunicorn", "--bind=0.0.0.0:9696", "--workers=2", "predict:app"]
+CMD gunicorn --bind=0.0.0.0:${PORT:-9696} --workers=2 predict:app

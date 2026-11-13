@@ -121,16 +121,27 @@ docker run -it --rm -p 9696:9696 diabetes-readmission
 python test_request.py            # in another terminal
 ```
 
-## 6. Cloud deployment
+## 6. Cloud deployment (Render)
 
-The service is a standard Docker image listening on port 9696, so it can be deployed to any
-container platform. Example with [Fly.io](https://fly.io):
+The service is a Docker image, deployed on [Render](https://render.com) (free web service) straight
+from this GitHub repository. `render.yaml` describes the service and the `Dockerfile` binds to the
+`$PORT` that Render provides.
+
+1. Push this repo to GitHub.
+2. In Render: **New > Blueprint**, pick the repo; Render reads `render.yaml`, builds the Dockerfile and deploys.
+3. Test the live service (the free tier sleeps when idle, the first request can take ~1 minute):
 
 ```bash
-fly auth login
-fly launch --name diabetes-readmission --internal-port 9696 --no-deploy
-fly deploy
-python test_request.py https://diabetes-readmission.fly.dev
+curl https://<your-service>.onrender.com/ping
+python test_request.py https://<your-service>.onrender.com
 ```
 
-*Status: not deployed yet. Add the public URL or a screenshot here once deployed.*
+*Status: add the public URL or a screenshot here once deployed.*
+
+## 7. Notes on model performance
+
+ROC-AUC of ~0.68 looks modest but is in line with published work on this dataset: 30-day readmission
+depends on factors that are not in the data (social situation, adherence, post-discharge care).
+Extra experiments (3-digit ICD-9 codes, ratio features, dropping rare drugs, deeper/slower XGBoost)
+changed validation AUC by less than 0.004, so the simpler final model was kept. The model is intended
+for **ranking** patients by risk (2x lift in the top 20%), not as a yes/no oracle.
