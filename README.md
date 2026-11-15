@@ -40,12 +40,21 @@ Hyper-parameters tuned on the validation set with random search; test set used o
 | Model | Tuned parameters | Val ROC-AUC | Test ROC-AUC | Test PR-AUC |
 |---|---|---|---|---|
 | Baseline (prior) | - | 0.500 | - | - |
-| Logistic regression | C, class_weight | 0.666 | 0.671 | 0.216 |
-| Random forest | trees, depth, leaf size, max_features, class_weight | 0.671 | 0.678 | 0.225 |
-| **XGBoost** | trees, lr, depth, min_child_weight, subsample, colsample, scale_pos_weight | **0.674** | **0.683** | **0.238** |
+| Logistic regression | C, class_weight | 0.677 | 0.679 | 0.233 |
+| Random forest | trees, depth, leaf size, max_features, class_weight | 0.682 | 0.685 | 0.234 |
+| **XGBoost** | trees, lr, depth, min_child_weight, subsample, colsample, lambda, scale_pos_weight | **0.688** | **0.691** | **0.253** |
 
-Flagging the top 20% highest-risk patients catches ~40% of all early readmissions
-(precision ~23% vs. 11% base rate, i.e. 2x lift).
+(`train.py` reports 0.695 test ROC-AUC for the same configuration; differences of about 0.004 come from
+row-order randomness in the tree sampling.)
+
+**Feature engineering that helped most:** *patient-history features* (number of earlier encounters,
+earlier early-readmissions, whether the previous stay was an early readmission, days spent in
+hospital before). They use only a patient's **earlier** encounters, never later ones, and raised validation
+ROC-AUC from 0.674 to 0.682 on their own. Finer 3-digit diagnosis codes, ratio features and dropping
+very rare drugs added the rest.
+
+Flagging the top 20% highest-risk patients catches ~43% of all early readmissions
+(precision ~24% vs. 11% base rate, i.e. 2.1x lift).
 
 ## 4. Project structure
 
@@ -106,12 +115,16 @@ python test_request.py                              # sends a sample patient
 Example response:
 
 ```json
-{"high_risk": true, "readmission_30d_probability": 0.4631, "threshold": 0.3417}
+{"high_risk": true, "readmission_30d_probability": 0.2491, "threshold": 0.1538}
 ```
 
 `POST /predict` expects a JSON object with the raw encounter fields (same names as in
 `diabetic_data.csv`); see `test_request.py` for a complete example. Missing required fields return
 HTTP 400 with the list of missing fields.
+
+Optional **patient-history fields** (`n_prior_enc`, `prior_lt30_cnt`, `prior_any_cnt`, `prev_lt30`,
+`prev_any`, `prior_days`) can be sent when the hospital knows the patient's earlier stays; if omitted they
+default to 0 (no known history) and the score is less accurate.
 
 ### 5.5 Docker
 
@@ -140,13 +153,17 @@ python test_request.py https://<your-service>.onrender.com
 
 ```bash
 python test_request.py https://diabetes-readmission-uii0.onrender.com
-# {'high_risk': True, 'readmission_30d_probability': 0.4631, 'threshold': 0.3417}
+# {'high_risk': True, 'readmission_30d_probability': 0.2491, 'threshold': 0.1538}
 ```
 
 ## 7. Notes on model performance
 
-ROC-AUC of ~0.68 looks modest but is in line with published work on this dataset: 30-day readmission
-depends on factors that are not in the data (social situation, adherence, post-discharge care).
-Extra experiments (3-digit ICD-9 codes, ratio features, dropping rare drugs, deeper/slower XGBoost)
-changed validation AUC by less than 0.004, so the simpler final model was kept. The model is intended
-for **ranking** patients by risk (2x lift in the top 20%), not as a yes/no oracle.
+ROC-AUC of ~0.69 looks modest but is in line with published work on this dataset: 30-day readmission
+depends on factors that are not in the data (social situation, adherence, post-discharge care, lab values).
+The dataset is anonymised (no hospital, date or location), so it cannot be joined with other sources.
+Ensembling XGBoost with the random forest and logistic regression added only +0.0005 validation AUC,
+so the simpler single XGBoost model was kept. The model is intended for **ranking** patients by risk
+(2.1x lift in the top 20%), not as a yes/no oracle.
+
+**Live service note:** the deployed Render service is rebuilt from the `main` branch; the service shows the
+model that was last pushed.
