@@ -8,7 +8,7 @@ import pickle
 import pandas as pd
 from flask import Flask, jsonify, request
 
-from features import prepare_features
+from features import HIST_COLS, prepare_features
 
 MODEL_FILE = "model.bin"
 
@@ -53,6 +53,8 @@ def predict():
         return jsonify({"error": "missing fields", "fields": missing}), 400
 
     row = {c: patient.get(c) for c in REQUIRED}
+    # optional patient-history fields (default: no known history)
+    row.update({c: patient[c] for c in HIST_COLS if c in patient})
     try:
         X = prepare_features(pd.DataFrame([row]))
         proba = float(model.predict_proba(X)[0, 1])

@@ -19,6 +19,9 @@ patient = {
     "glyburide-metformin": "No", "glipizide-metformin": "No",
     "glimepiride-pioglitazone": "No", "metformin-rosiglitazone": "No",
     "metformin-pioglitazone": "No",
+    # optional patient-history fields (omit them if the history is unknown)
+    "n_prior_enc": 3, "prior_lt30_cnt": 1, "prior_any_cnt": 2,
+    "prev_lt30": 1, "prev_any": 1, "prior_days": 12,
 }
 
 print(requests.post(f"{url}/predict", json=patient).json())
