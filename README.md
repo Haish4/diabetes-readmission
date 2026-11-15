@@ -136,7 +136,12 @@ curl https://<your-service>.onrender.com/ping
 python test_request.py https://<your-service>.onrender.com
 ```
 
-*Status: add the public URL or a screenshot here once deployed.*
+**Live service:** https://diabetes-readmission-uii0.onrender.com (free tier: first request after idle may take ~1 minute)
+
+```bash
+python test_request.py https://diabetes-readmission-uii0.onrender.com
+# {'high_risk': True, 'readmission_30d_probability': 0.4631, 'threshold': 0.3417}
+```
 
 ## 7. Notes on model performance
 
