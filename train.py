@@ -20,11 +20,11 @@ from features import CAT_COLS, NUM_COLS, load_data, prepare_features
 OUTPUT_FILE = "model.bin"
 FLAG_FRACTION = 0.20  # flag the 20% highest-risk discharges
 
-# Best configuration found in notebook.ipynb (validation ROC-AUC 0.674)
+# Best configuration found in notebook.ipynb (validation ROC-AUC 0.688)
 XGB_PARAMS = dict(
-    n_estimators=500, learning_rate=0.03, max_depth=4, min_child_weight=5,
-    subsample=0.7, colsample_bytree=0.5, scale_pos_weight=3,
-    tree_method="hist", n_jobs=-1, random_state=1, eval_metric="logloss",
+    n_estimators=300, learning_rate=0.05, max_depth=6, min_child_weight=5,
+    subsample=0.7, colsample_bytree=0.5, reg_lambda=1, scale_pos_weight=1,
+    tree_method="hist", n_jobs=-1, random_state=1,
 )
 
 
