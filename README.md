@@ -156,6 +156,16 @@ python test_request.py https://diabetes-readmission-uii0.onrender.com
 # {'high_risk': True, 'readmission_30d_probability': 0.2491, 'threshold': 0.1538}
 ```
 
+**Proof of deployment**
+
+Calling the live service from the command line:
+
+![Testing the deployed service](images/deployment1.png)
+
+Render dashboard showing the service is live (Docker, auto-deployed from GitHub):
+
+![Render dashboard](images/deployment.png)
+
 ## 7. Notes on model performance
 
 ROC-AUC of ~0.69 looks modest but is in line with published work on this dataset: 30-day readmission
